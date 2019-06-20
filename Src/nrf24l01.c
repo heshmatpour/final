@@ -1,4 +1,5 @@
 #include "nrf24l01.h"
+extern UART_HandleTypeDef huart2;
 
 static void NRF_CS_SETPIN(nrf24l01_dev* dev)
 {
@@ -24,7 +25,6 @@ static void NRF_CE_RESETPIN(nrf24l01_dev* dev)
 
 static NRF_RESULT NRF_SetupGPIO(nrf24l01_dev* dev)
 {
-
     GPIO_InitTypeDef GPIO_InitStructure;
 
     // CE pin
@@ -35,26 +35,27 @@ static NRF_RESULT NRF_SetupGPIO(nrf24l01_dev* dev)
 
     HAL_GPIO_Init(dev->NRF_CE_GPIOx, &GPIO_InitStructure);
     // end CE pin
-
+		/*
     // IRQ pin
     GPIO_InitStructure.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStructure.Pull = GPIO_PULLUP;
-    GPIO_InitStructure.Pin = dev->NRF_IRQ_GPIO_PIN;
-    HAL_GPIO_Init(dev->NRF_IRQ_GPIOx, &GPIO_InitStructure);
-
+    GPIO_InitStructure.Pin = dev->NRF_IRQ_GPIO_PIN;  
+		HAL_GPIO_Init(dev->NRF_IRQ_GPIOx, &GPIO_InitStructure);
+		//HAL_UART_Transmit(&huart2, (uint8_t *)"setGPIO ok", strlen("setGPIO ok") ,100);
+	*/
     // CSN pin
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
     GPIO_InitStructure.Pin = dev->NRF_CSN_GPIO_PIN;
-
     HAL_GPIO_Init(dev->NRF_CSN_GPIOx, &GPIO_InitStructure);
-    /* Enable and set EXTI Line Interrupt to the given priority */
+	
+    /* Enable and set EXTI Line Interrupt to the given priority 
     HAL_NVIC_SetPriority(dev->NRF_IRQn, dev->NRF_IRQ_preempt_priority,
         dev->NRF_IRQ_sub_priority);
     HAL_NVIC_EnableIRQ(dev->NRF_IRQn);
     // end IRQ pin
-
+		*/
     NRF_CS_RESETPIN(dev);
     NRF_CE_RESETPIN(dev);
 
@@ -64,17 +65,14 @@ static NRF_RESULT NRF_SetupGPIO(nrf24l01_dev* dev)
 
 NRF_RESULT NRF_Init(nrf24l01_dev* dev)
 {
-
-    NRF_SetupGPIO(dev);
-
+    NRF_SetupGPIO(dev);	
     NRF_PowerUp(dev, 1);
-
     uint8_t config = 0;
-
-    while ((config & 2) == 0) { // wait for powerup
+	//in test with nrf it should be uncomment
+ //   while ((config & 2) == 0) { // wait for powerup
         NRF_ReadRegister(dev, NRF_CONFIG, &config);
-    }
-
+   // }
+	
     NRF_SetRXPayloadWidth_P0(dev, dev->PayloadLength);
     NRF_SetRXAddress_P0(dev, dev->RX_ADDRESS);
     NRF_SetTXAddress(dev, dev->TX_ADDRESS);
@@ -91,8 +89,7 @@ NRF_RESULT NRF_Init(nrf24l01_dev* dev)
 
     NRF_EnableRXPipe(dev, 0);
     NRF_EnableAutoAcknowledgement(dev, 0);
-
-    NRF_ClearInterrupts(dev);
+		NRF_ClearInterrupts(dev);
 
     NRF_RXTXControl(dev, NRF_STATE_RX);
 
@@ -114,12 +111,11 @@ NRF_RESULT NRF_SendCommand(nrf24l01_dev* dev, uint8_t cmd, uint8_t* tx, uint8_t*
         myRX[i] = 0;
     }
 
-    NRF_CS_RESETPIN(dev);
+    NRF_CS_RESETPIN(dev);/*
     if (HAL_SPI_TransmitReceive(dev->spi, myTX, myRX, 1 + len, NRF_SPI_TIMEOUT)
         != HAL_OK) {
         return NRF_ERROR;
-    }
-
+    }*/
     for (i = 0; i < len; i++) {
         rx[i] = myRX[1 + i];
     }

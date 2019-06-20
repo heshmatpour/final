@@ -42,10 +42,14 @@
 
 /* USER CODE BEGIN Includes */
 #include "nrf24l01.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
+
+extern UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -56,6 +60,7 @@ SPI_HandleTypeDef hspi1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -63,6 +68,18 @@ static void MX_SPI1_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+uint8_t data[32] = "";
+int count = 0;
+void receive_data_from_uart(){
+	HAL_UART_Transmit(&huart2, (uint8_t *)"OK", 2 ,100);
+	char ch = 'a';
+	while(ch != '\n')
+	{
+			while(HAL_UART_Receive(&huart2,(unsigned char *)&ch, 1,100) != HAL_OK){};
+			data[count++] = ch;
+	}
+	count = 0;
+}
 
 /* USER CODE END 0 */
 
@@ -83,7 +100,25 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+		nrf24l01_dev dev;
+    dev.DATA_RATE = NRF_DATA_RATE_1MBPS;
+    dev.TX_POWER = NRF_TX_PWR_0dBm;
+    dev.CRC_WIDTH = NRF_CRC_WIDTH_1B;
+    dev.ADDR_WIDTH = NRF_ADDR_WIDTH_5;
+    dev.STATE = NRF_STATE_TX; // this parameter can be deleted, each Rx/Tx will change this reg
+    dev.PayloadLength = 32; // maximum is 32 Bytes
+    dev.RetransmitCount = 10; // maximum is 15 times
+    dev.RetransmitDelay = 0x0F; // 4000us, LSB:250us
 
+    //enable RCC for GPIO port!!
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    dev.NRF_CSN_GPIOx = GPIOA;
+    dev.NRF_CSN_GPIO_PIN = GPIO_PIN_0;
+    dev.NRF_CE_GPIOx = GPIOA;
+    dev.NRF_CE_GPIO_PIN = GPIO_PIN_1;
+    dev.NRF_IRQ_GPIOx = GPIOA;
+    dev.NRF_IRQ_GPIO_PIN = GPIO_PIN_2;
+		
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -95,8 +130,12 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SPI1_Init();
+	MX_SPI1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+	
+	NRF_Init(&dev);
+  static NRF_RESULT res;
 
   /* USER CODE END 2 */
 
@@ -108,6 +147,15 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+		receive_data_from_uart();
+	//	res = NRF_SendPacket(&dev, data);
+//		res = NRF_ReceivePacket(&dev, data);
+	
+		HAL_UART_Transmit(&huart2, (uint8_t *)data, 5 ,100);
+	//	HAL_UART_Transmit(&huart2, (uint8_t *)"OK", strlen("OK") ,100);
+		
+		
+		HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */
@@ -190,6 +238,25 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
+/* USART2 init function */
+static void MX_USART2_UART_Init(void)
+{
+
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }

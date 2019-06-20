@@ -2,6 +2,7 @@
 #define __nrf24l01
 #include "stm32f4xx_hal.h"
 #include <stdint.h>
+#include "string.h"
 
 /* Registers */
 #define NRF_CONFIG 0x00
