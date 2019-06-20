@@ -41,7 +41,7 @@
 #include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "nrf24l01.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
