@@ -124,7 +124,7 @@ NRF_RESULT NRF_SendCommand(nrf24l01_dev* dev, uint8_t cmd, uint8_t* tx, uint8_t*
 
     return NRF_OK;
 }
-
+/*
 void NRF_IRQ_Handler(nrf24l01_dev* dev)
 {
     uint8_t status = 0;
@@ -171,6 +171,7 @@ void NRF_IRQ_Handler(nrf24l01_dev* dev)
         dev->BUSY_FLAG = 0;
     }
 }
+*/
 NRF_RESULT NRF_ReadRegister(nrf24l01_dev* dev, uint8_t reg, uint8_t* data)
 {
     uint8_t tx = 0;
@@ -221,6 +222,7 @@ NRF_RESULT NRF_FlushTX(nrf24l01_dev* dev)
     return NRF_OK;
 }
 
+
 NRF_RESULT NRF_FlushRX(nrf24l01_dev* dev)
 {
     uint8_t rx = 0;
@@ -269,7 +271,7 @@ NRF_RESULT NRF_SetTXPower(nrf24l01_dev* dev, NRF_TX_PWR pwr)
     dev->TX_POWER = pwr;
     return NRF_OK;
 }
-
+/*
 NRF_RESULT NRF_SetCCW(nrf24l01_dev* dev, uint8_t activate)
 {
     uint8_t reg = 0;
@@ -288,7 +290,7 @@ NRF_RESULT NRF_SetCCW(nrf24l01_dev* dev, uint8_t activate)
     }
     return NRF_OK;
 }
-
+*/
 NRF_RESULT NRF_ClearInterrupts(nrf24l01_dev* dev)
 {
     uint8_t reg = 0;

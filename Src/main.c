@@ -101,6 +101,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 		nrf24l01_dev dev;
+		dev.spi = &hspi1;
     dev.DATA_RATE = NRF_DATA_RATE_1MBPS;
     dev.TX_POWER = NRF_TX_PWR_0dBm;
     dev.CRC_WIDTH = NRF_CRC_WIDTH_1B;
@@ -109,7 +110,8 @@ int main(void)
     dev.PayloadLength = 32; // maximum is 32 Bytes
     dev.RetransmitCount = 10; // maximum is 15 times
     dev.RetransmitDelay = 0x0F; // 4000us, LSB:250us
-
+		dev.RF_CHANNEL = 0;
+		
     //enable RCC for GPIO port!!
     __HAL_RCC_GPIOA_CLK_ENABLE();
     dev.NRF_CSN_GPIOx = GPIOA;

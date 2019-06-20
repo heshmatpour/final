@@ -45,7 +45,6 @@
 #define NRF_CMD_W_ACK_PAYLOAD 0xA8
 #define NRF_CMD_W_TX_PAYLOAD_NOACK 0xB0
 #define NRF_CMD_NOP 0xFF
-
 #define NRF_SPI_TIMEOUT 100000
 
 typedef enum {
